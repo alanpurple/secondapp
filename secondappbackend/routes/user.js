@@ -183,7 +183,7 @@ router.patch('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
     try {
-        const reponse = await axios.delete(ksUserUrl + '/' + req.params.id, {
+        const response = await axios.delete(ksUserUrl + '/' + req.params.id, {
             headers: {
                 'x-auth-token': req.user.tokenId2
             }
