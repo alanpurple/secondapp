@@ -44,7 +44,7 @@ router.get('/', async (req, res) => {
             res.sendStatus(204);
             return;
         }
-        let users = usersData.filter(elem => elem.is_wf && ('default_project_id' in elem)
+        let users = usersData.filter(elem => elem.is_wf //&& ('default_project_id' in elem)
             && ('domain_id' in elem));
         if (users.length < 1) {
             res.sendStatus(204);
@@ -123,7 +123,8 @@ router.post('/', async (req, res) => {
         name:req.body.name,
         email:req.body.email,
         enabled:req.body.enabled,
-        password:req.body.password,
+        password: req.body.password,
+        default_project_id:req.body.primary_namespace_id,
         is_wf:true
     };
     if(req.body.description)
@@ -134,7 +135,7 @@ router.post('/', async (req, res) => {
                 'x-auth-token': req.user.tokenId2
             }
         });
-        const id=response.data.id;
+        const id=response.data.user.id;
         if(!response.data.user)
             throw new Error('somethings wrong, creation successful but no user data?');
         response=await axios.put(KsUrl + 'projects/' + req.body.primary_namespace_id + '/users/' + id + '/roles/' + req.body.role_ids[0],
