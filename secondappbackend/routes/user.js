@@ -177,10 +177,24 @@ router.patch('/:id', async (req, res) => {
         res.send('user info updated');
     }
     catch (err) {
-        console.error(err);
-        res.status(500).send(err);
+        res.status(400).send(err);
     }
 });
+
+router.delete('/:id', async (req, res) => {
+    try {
+        const reponse = await axios.delete(ksUserUrl + '/' + req.params.id, {
+            headers: {
+                'x-auth-token': req.user.tokenId2
+            }
+        });
+        res.send('user deleted');
+    }
+    catch (err) {
+        res.status(400).send(err);
+    }
+});
+
 function ensureAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {
         if (('tokenId' in req.user) && ('tokenId2' in req.user) && ('k8s_token' in req.user)) {
