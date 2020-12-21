@@ -286,7 +286,6 @@ router.post('/', async (req, res) => {
         let secretData = k8sRes.body.data;
         if (!('accesskey' in secretData) || !('secretkey' in secretData))
             throw new Error('not enough key');
-        secretData.metadata.namespace=project.name;
         k8sRes = await k8sCore.createNamespacedSecret(project.name, {
             apiVersion: 'v1',
             kind: 'Secret',
