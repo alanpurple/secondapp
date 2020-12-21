@@ -27,8 +27,9 @@ const sqlOptions = {
     port: 3306,
     user: 'argo',
     password: 'devstack',
-    database: 'tempdb'
-}
+    database: 'tempdb',
+    expiration: 3000000
+};
 
 /*tempdb_session.getSession().then(
     session => session.sql(`CREATE TABLE IF NOT EXISTS 'tempdb'.'tenant_session' (
