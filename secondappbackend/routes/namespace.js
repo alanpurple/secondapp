@@ -283,7 +283,7 @@ router.post('/', async (req, res) => {
             }
         });
         k8sRes=await k8sCore.readNamespacedSecret('argo-artifacts','argo');
-        let secretData = k8sRes.data;
+        let secretData = k8sRes.body.data;
         if (!('accesskey' in secretData) || !('secretkey' in secretData))
             throw new Error('not enough key');
         secretData.metadata.namespace=project.name;
