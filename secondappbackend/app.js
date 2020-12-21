@@ -13,7 +13,7 @@ const fernet = require('fernet');
 
 const KsInfo = require('./ksinfo.json');
 
-const KsIdentityURL = KsInfo.KS_AUTH_URL + '/v' + KsInfo.KS_IDENTITY_API_VERSION + '/';
+const KsIdentityURL = KsInfo.KS_AUTH_URL + 'v' + KsInfo.KS_IDENTITY_API_VERSION + '/';
 
 const KeystoneStrategy = require('./passport-keystone');
 
