@@ -310,9 +310,9 @@
     align-items: flex-start;
   }*/
 
-  mat-drawer-container {
+  /* mat-drawer-container {
     flex: 1 1 auto;
-  }
+  } */
 
 </style>
 
@@ -334,7 +334,7 @@
       </mat-menu>
     </div>
   </mat-toolbar>
-  <mat-drawer-container>
+  <mat-drawer-container fxFlex>
     <mat-drawer #sidemenu [mode]="sidenavMode" [opened]="isOpened">
       <mat-list>
         <mat-list-item>
