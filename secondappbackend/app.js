@@ -9,7 +9,7 @@ const axios = require('axios');
 const session = require('express-session');
 const SqlStore = require('express-mysql-session')(session);
 const passport = require('passport');
-const fernet = require('fernet');
+//const fernet = require('fernet');
 
 const KsInfo = require('./ksinfo.json');
 
