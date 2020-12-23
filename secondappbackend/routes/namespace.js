@@ -206,6 +206,8 @@ router.post('/', async (req, res) => {
     let project = req.body;
     project.is_wf = true;
     project.is_cluster = false;
+    project.quota_cpu = project.quota.cpu;
+    project.quota_mem = project.quota.memory;
     try {
         const tokenId = req.user.roles?.includes('wf-tenant-admin') ? req.user.admin_token : req.user.tokenId2;
         /*const clResponse = await axios.get(KsUrl + 'projects/' + project.parent_id, {
@@ -224,7 +226,7 @@ router.post('/', async (req, res) => {
             }
         });
         let k8sRes = await k8sCore.createNamespace({ metadata: { name: project.name } });
-        const quotaData = {
+        /*const quotaData = {
             apiVersion: "v1", kind: "ResourceQuota",
             metadata: { name: "compute-resources" },
             spec: {
@@ -259,12 +261,12 @@ router.post('/', async (req, res) => {
                     type: 'Container'
                     }]
             }
-        });
+        });*/
         k8sRes = await k8sRbac.createNamespacedRoleBinding(project.name,{
             apiVersion: 'rbac.authorization.k8s.io/v1', 
             kind: 'RoleBinding',
             metadata: { 
-                name: project.name + '_default_admin',
+                name: project.name + 'default_admin',
                 namespace: project.name
             },
             subjects: [
@@ -281,11 +283,21 @@ router.post('/', async (req, res) => {
             }
         });
         k8sRes=await k8sCore.readNamespacedSecret('argo-artifacts','argo');
-        let secretData=k8sRes.data;
-        if(!('metadata' in secretData))
-            throw new Error('no metadata property in secret');
-        secretData.metadata.namespace=project.name;
-        k8sRes = await k8sCore.createNamespacedSecret(project.name,secretData);
+        let secretData = k8sRes.body.data;
+        if (!('accesskey' in secretData) || !('secretkey' in secretData))
+            throw new Error('not enough key');
+        k8sRes = await k8sCore.createNamespacedSecret(project.name, {
+            apiVersion: 'v1',
+            kind: 'Secret',
+            metadata: {
+                name: 'argo-artifacts'
+            },
+            type: 'Opaque',
+            data: {
+                accesskey: secretData.accesskey,
+                secretkey: secretData.secretkey
+            } 
+        });
         res.send('namespace created successfully');
     }
     catch (err) {

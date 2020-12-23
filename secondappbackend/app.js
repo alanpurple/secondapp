@@ -9,11 +9,11 @@ const axios = require('axios');
 const session = require('express-session');
 const SqlStore = require('express-mysql-session')(session);
 const passport = require('passport');
-const fernet = require('fernet');
+//const fernet = require('fernet');
 
 const KsInfo = require('./ksinfo.json');
 
-const KsIdentityURL = KsInfo.KS_AUTH_URL + '/v' + KsInfo.KS_IDENTITY_API_VERSION + '/';
+const KsIdentityURL = KsInfo.KS_AUTH_URL + 'v' + KsInfo.KS_IDENTITY_API_VERSION + '/';
 
 const KeystoneStrategy = require('./passport-keystone');
 
@@ -27,8 +27,9 @@ const sqlOptions = {
     port: 3306,
     user: 'argo',
     password: 'devstack',
-    database: 'tempdb'
-}
+    database: 'tempdb',
+    expiration: 3000000
+};
 
 /*tempdb_session.getSession().then(
     session => session.sql(`CREATE TABLE IF NOT EXISTS 'tempdb'.'tenant_session' (
