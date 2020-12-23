@@ -317,8 +317,8 @@
       </mat-menu>
     </div>
   </mat-toolbar>
-  <mat-drawer-container fxFlex>
-    <mat-drawer #sidemenu [mode]="sidenavMode" [opened]="isOpened">
+  <mat-sidenav-container fxFlex>
+    <mat-sidenav #sidemenu [mode]="sidenavMode" [opened]="isOpened">
       <mat-list>
         <mat-list-item>
           <button mat-icon-button routerLink="/" (click)="handleMenu(sidemenu)">
@@ -350,11 +350,11 @@
           </button>
         </mat-list-item>
       </mat-list>
-    </mat-drawer>
-    <mat-drawer-content fxLayout="column">
+    </mat-sidenav>
+    <mat-sidenav-content fxLayout="column">
       <router-outlet></router-outlet>
-    </mat-drawer-content>
-  </mat-drawer-container>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
 </div>
 
 
