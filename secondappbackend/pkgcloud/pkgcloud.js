@@ -5,22 +5,18 @@
  *
  */
 
-var path = require('path');
+const path = require('path');
 
-var pkgcloud = {};
+let pkgcloud = {};
 
-var components = [
+const components = [
   './core/base',
   './common',
   //'./pkgcloud/core/compute',
   //'./pkgcloud/core/storage'
 ];
 
-var providers = [
-  'openstack'
-];
-
-var services = [
+const services = [
   'compute',
   'database',
   'orchestration',
@@ -31,8 +27,8 @@ var services = [
 //
 // Setup lazy-loaded exports for faster loading
 //
-components.forEach(function (component) {
-  var name = path.basename(component),
+components.forEach(component=> {
+  const name = path.basename(component),
       hidden = '_' + name;
 
   pkgcloud.__defineGetter__(name, function () {
@@ -52,8 +48,8 @@ pkgcloud.providers = {};
 //
 // Setup empty exports to be populated later
 //
-services.forEach(function (key) {
-  pkgcloud[key] = {};
+services.forEach(key => {
+    pkgcloud[key] = {};
 });
 
 //

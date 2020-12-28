@@ -5,7 +5,7 @@
  *
  */
 
-var events = require('eventemitter2'),
+const events = require('eventemitter2'),
     request = require('request'),
     util = require('util'),
     qs = require('qs'),
@@ -19,9 +19,9 @@ var events = require('eventemitter2'),
  * @param {object}    options   options are stored as client.config
  * @type {Function}
  */
-var Client = exports.Client = function (options) {
-  events.EventEmitter2.call(this, { delimiter: '::', wildcard: true });
-  this.config = options || {};
+let Client = function (options) {
+    events.EventEmitter2.call(this, { delimiter: '::', wildcard: true });
+    this.config = options || {};
 };
 
 util.inherits(Client, events.EventEmitter2);
@@ -224,3 +224,5 @@ Client.prototype._parseError = function(response, body) {
 
   return err;
 };
+
+module.exports = Client;

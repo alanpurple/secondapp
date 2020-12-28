@@ -5,16 +5,16 @@
  *
  */
 
-var events = require('eventemitter2'),
+const events = require('eventemitter2'),
     util = require('util');
 
-var Model = function (client, details) {
-  events.EventEmitter2.call(this, { delimiter: '::', wildcard: true });
-  this.client = client;
+let Model = function (client, details) {
+    events.EventEmitter2.call(this, { delimiter: '::', wildcard: true });
+    this.client = client;
 
-  if (details) {
-    this._setProperties(details);
-  }
+    if (details) {
+        this._setProperties(details);
+    }
 };
 
 util.inherits(Model, events.EventEmitter2);

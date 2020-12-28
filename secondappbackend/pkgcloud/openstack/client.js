@@ -6,7 +6,7 @@
  *
  */
 
-var util = require('util'),
+const util = require('util'),
     through = require('through2'),
     base = require('../core/base'),
     errs = require('errs'),
@@ -22,7 +22,7 @@ var util = require('util'),
  */
 var Client = exports.Client = function (options) {
 
-  var self = this;
+  const self = this;
 
   options.earlyTokenTimeout = typeof options.earlyTokenTimeout === 'number'
     ? options.earlyTokenTimeout
@@ -74,50 +74,50 @@ var Client = exports.Client = function (options) {
 
 util.inherits(Client, base.Client);
 
-Client.prototype._getIdentityOptions = function() {
-  var options = {
-    url: this.authUrl,
-    version: this.version,
-    username: this.config.username,
-    password: this.config.password,
-    keystoneAuthVersion: this.keystoneAuthVersion
-  };
+Client.prototype._getIdentityOptions = function () {
+    let options = {
+        url: this.authUrl,
+        version: this.version,
+        username: this.config.username,
+        password: this.config.password,
+        keystoneAuthVersion: this.keystoneAuthVersion
+    };
 
-  options.strictSSL = typeof this.config.strictSSL === 'boolean'
-  ? this.config.strictSSL : true;
+    options.strictSSL = typeof this.config.strictSSL === 'boolean'
+        ? this.config.strictSSL : true;
 
-  if (this.config.domainId) {
-    options.domainId = this.config.domainId;
-  } else if (this.config.domainName) {
-    options.domainName = this.config.domainName;
-  }
+    if (this.config.domainId) {
+        options.domainId = this.config.domainId;
+    } else if (this.config.domainName) {
+        options.domainName = this.config.domainName;
+    }
 
-  if (this.config.projectDomainName) {
-    options.projectDomainName = this.config.projectDomainName;
-  } else if (this.config.projectDomainId) {
-    options.projectDomainId = this.config.projectDomainId;
-  }
+    if (this.config.projectDomainName) {
+        options.projectDomainName = this.config.projectDomainName;
+    } else if (this.config.projectDomainId) {
+        options.projectDomainId = this.config.projectDomainId;
+    }
 
-  if (this.config.tenantId) {
-    options.tenantId = this.config.tenantId;
-  }
-  else if (this.config.tenantName) {
-    options.tenantName = this.config.tenantName;
-  }
+    if (this.config.tenantId) {
+        options.tenantId = this.config.tenantId;
+    }
+    else if (this.config.tenantName) {
+        options.tenantName = this.config.tenantName;
+    }
 
-  if (typeof this.config.useServiceCatalog === 'boolean') {
-    options.useServiceCatalog = this.config.useServiceCatalog;
-  }
+    if (typeof this.config.useServiceCatalog === 'boolean') {
+        options.useServiceCatalog = this.config.useServiceCatalog;
+    }
 
-  if (this.config.basePath) {
-    options.basePath = this.config.basePath;
-  }
+    if (this.config.basePath) {
+        options.basePath = this.config.basePath;
+    }
 
-  if (this.config.headers) {
-    options.token = this.config.headers.authorization;
-  }
+    if (this.config.headers) {
+        options.token = this.config.headers.authorization;
+    }
 
-  return options;
+    return options;
 };
 
 Client.prototype.failCodes = {
@@ -150,43 +150,43 @@ Client.prototype.successCodes = {
  * @param callback
  */
 Client.prototype.auth = function (callback) {
-  var self = this;
+    var self = this;
 
-  if (self._isAuthorized()) {
-    callback();
-    return;
-  }
-
-  self._identity.authorize(function(err) {
-    if (err) {
-      return callback(err);
+    if (self._isAuthorized()) {
+        callback();
+        return;
     }
 
-    var options = {
-      region: self.region,
-      serviceType: self.serviceType,
-      useInternal: self.config.useInternal,
-      useAdmin: self.config.useAdmin
-    };
+    self._identity.authorize(err => {
+        if (err) {
+            return callback(err);
+        }
 
-    try {
-      //self._serviceUrl = self._identity.getServiceEndpointUrl(options);
+        const options = {
+            region: self.region,
+            serviceType: self.serviceType,
+            useInternal: self.config.useInternal,
+            useAdmin: self.config.useAdmin
+        };
 
-      self.emit('log::trace', 'Selected service url', {
-          serviceUrl: 'http://183.111.177.141/identity',
-        options: options
-      });
+        try {
+            //self._serviceUrl = self._identity.getServiceEndpointUrl(options);
 
-      callback();
-    }
-    catch (e) {
-      self.emit('log::error', 'Unable to select endpoint for service', {
-        error: e.toString(),
-        options: options
-      });
-      callback(e);
-    }
-  });
+            self.emit('log::trace', 'Selected service url', {
+                serviceUrl: 'http://183.111.177.141/identity',
+                options: options
+            });
+
+            callback();
+        }
+        catch (e) {
+            self.emit('log::error', 'Unable to select endpoint for service', {
+                error: e.toString(),
+                options: options
+            });
+            callback(e);
+        }
+    });
 };
 
 /**
@@ -201,82 +201,70 @@ Client.prototype.auth = function (callback) {
  */
 Client.prototype._request = function (options, callback) {
 
-  var self = this;
-  if (!self._isAuthorized()) {
-    self.emit('log::trace', 'Not-Authenticated, inlining Auth...');
-    var proxyStream = through();
-    proxyStream.pause();
+    const self = this;
+    if (!self._isAuthorized()) {
+        self.emit('log::trace', 'Not-Authenticated, inlining Auth...');
+        var proxyStream = through();
+        proxyStream.pause();
 
-    self.auth(function (err) {
-      if (err) {
-        self.emit('log::error', 'Error with inline authentication', err);
-        if (callback) {
-          return errs.handle(err, callback);
-        }
+        self.auth(err => {
+            if (err) {
+                self.emit('log::error', 'Error with inline authentication', err);
+                if (callback) {
+                    return errs.handle(err, callback);
+                }
 
-        return errs.handle(err, function (err) {
-          if (err) {
-            proxyStream.emit('error', err);
-          }
-        });
-      }
+                return errs.handle(err, function (err) {
+                    if (err) {
+                        proxyStream.emit('error', err);
+                    }
+                });
+            }
 
-      self.emit('log::trace', 'Creating Authenticated Proxy Request');
-      var apiStream = Client.super_.prototype._request.call(self, options, callback);
+            self.emit('log::trace', 'Creating Authenticated Proxy Request');
+            var apiStream = Client.super_.prototype._request.call(self, options, callback);
 
-      proxyStream.on('abort', function () {
-        apiStream.abort();
-      });
+            proxyStream.on('abort', () => apiStream.abort());
 
-      proxyStream.abort = function () {
-        apiStream.abort();
-      };
+            proxyStream.abort = () => apiStream.abort();
 
-      if (options.upload) {
+            if (options.upload) {
 
-        // needed for event propagation during proxied auth for streams
-        apiStream.on('error', function (err) {
-          proxyStream.emit('error', err);
-        });
+                // needed for event propagation during proxied auth for streams
+                apiStream.on('error', err => proxyStream.emit('error', err));
 
-        apiStream.on('complete', function (response) {
-          proxyStream.emit('complete', response);
-        });
+                apiStream.on('complete', response => proxyStream.emit('complete', response));
 
-        proxyStream.pipe(apiStream);
-      }
-      else if (options.download) {
-        apiStream.on('error', function (err) {
-          proxyStream.emit('error', err);
+                proxyStream.pipe(apiStream);
+            }
+            else if (options.download) {
+                apiStream.on('error', err => proxyStream.emit('error', err));
+
+                apiStream.on('response', response => proxyStream.emit('response', response));
+                apiStream.pipe(proxyStream);
+            }
+
+            proxyStream.resume();
         });
 
-        apiStream.on('response', function (response) {
-          proxyStream.emit('response', response);
-        });
-        apiStream.pipe(proxyStream);
-      }
-
-      proxyStream.resume();
-    });
-
-    return proxyStream;
-  }
-  else {
-    self.emit('log::trace', 'Creating Authenticated Request');
-    return Client.super_.prototype._request.call(self, options, callback);
-  }
+        return proxyStream;
+    }
+    else {
+        self.emit('log::trace', 'Creating Authenticated Request');
+        return Client.super_.prototype._request.call(self, options, callback);
+    }
 };
 
 Client.prototype._isAuthorized = function () {
-  var self = this,
-      authorized = false;
+    let self = this,
+        authorized = false;
 
-  if (!self._serviceUrl || !self._identity || !self._identity.token || !self._identity.token.id || !self._identity.token.expires) {
-    authorized = false;
-  }
-  else if (self._identity.token.expires.getTime() - new Date().getTime() > self.config.earlyTokenTimeout) {
-    authorized = true;
-  }
+    if (!self._serviceUrl || !self._identity || !self._identity.token || !self._identity.token.id || !self._identity.token.expires) {
+        authorized = false;
+    }
+    else if (self._identity.token.expires.getTime() - new Date().getTime() > self.config.earlyTokenTimeout) {
+        authorized = true;
+    }
 
-  return authorized;
+    return authorized;
 };

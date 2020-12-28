@@ -5,5 +5,5 @@
  *
  */
 
-exports.Client = require('./client').Client;
+exports.Client = require('./client');
 exports.Model  = require('./model');

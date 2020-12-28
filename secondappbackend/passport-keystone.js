@@ -94,7 +94,7 @@ var lookup = function (obj, field) {
  * @api protected
  */
 Strategy.prototype.authenticate = function (req, options) {
-    var config = {};
+    let config = {};
     options = options || {};
     config.username = lookup(req.body, this._usernameField) || lookup(req.query, this._usernameField);
     config.password = lookup(req.body, this._passwordField) || lookup(req.query, this._passwordField);
@@ -123,15 +123,15 @@ Strategy.prototype.authenticate = function (req, options) {
         };
     };
 
-    var client = Identity.createClient(config);
+    const client = Identity.createClient(config);
 
-    client.auth(function (err) {
+    client.auth(err => {
         try {
             if (err) {
                 console.error(err);
                 console.log("First login attempt failed, trying project domain");
                 config.projectDomainName = config.domainName;
-                var newClient = Identity.createClient(config);
+                const newClient = Identity.createClient(config);
                 newClient.auth(function (err) {
                     if (err) {
                         console.log("Second login attempt failed, returning failure");
