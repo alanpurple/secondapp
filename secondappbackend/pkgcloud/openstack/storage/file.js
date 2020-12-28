@@ -6,11 +6,11 @@
  *
  */
 
-var util = require('util'),
+const util = require('util'),
     _ = require('lodash'),
     base = require('../../core/storage/file');
 
-var File = exports.File = function File(client, details) {
+let File = function File(client, details) {
   base.call(this, client, details);
 };
 
@@ -62,3 +62,4 @@ File.prototype.toJSON = function () {
   return _.pick(this, ['name', 'etag', 'size', 'storageClass', 'lastModified', 'container', 'location' ]);
 };
 
+module.exports = File;

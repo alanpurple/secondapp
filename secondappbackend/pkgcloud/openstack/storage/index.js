@@ -6,9 +6,9 @@
  *
  */
 
-exports.Client    = require('./client').Client;
-exports.Container = require('./container').Container;
-exports.File      = require('./file').File;
+exports.Client = require('./client');
+exports.Container = require('./container');
+exports.File = require('./file');
 
 exports.createClient = function (options) {
   return new exports.Client(options);

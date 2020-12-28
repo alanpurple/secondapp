@@ -6,9 +6,9 @@
  *
  */
 
-var util = require('util'),
+const util = require('util'),
     openstack = require('../../client'),
-    StorageClient = require('../storageClient').StorageClient,
+    StorageClient = require('../storageClient'),
     _ = require('lodash');
 
 var Client = exports.Client = function (options) {

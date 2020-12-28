@@ -8,7 +8,7 @@
  *
  */
 
-var _ = require('lodash');
+const _ = require('lodash');
 
 const CONTAINER_META_PREFIX = 'x-container-meta-';
 const CONTAINER_REMOVE_META_PREFIX = 'x-remove-container-meta-';
@@ -16,8 +16,8 @@ const OBJECT_META_PREFIX = 'x-object-meta-';
 const OBJECT_REMOVE_META_PREFIX = 'x-object-remove-meta-';
 const ACCOUNT_META_PREFIX = 'x-account-meta-';
 
-var Client = exports.StorageClient = function () {
-  this.serviceType = 'object-store';
+let Client = function () {
+    this.serviceType = 'object-store';
 };
 
 /**
@@ -32,7 +32,7 @@ var Client = exports.StorageClient = function () {
 Client.prototype._getUrl = function (options) {
   options = options || {};
 
-  var fragment = '';
+  let fragment = '';
 
   if (options.container) {
     fragment = encodeURIComponent(options.container);
@@ -42,7 +42,7 @@ Client.prototype._getUrl = function (options) {
     fragment = new URL(fragment, options.path.split('/').map(encodeURIComponent).join('/'));
   }
 
-  var serviceUrl = options.serviceType ? this._identity.getServiceEndpointUrl({
+  const serviceUrl = options.serviceType ? this._identity.getServiceEndpointUrl({
     serviceType: options.serviceType,
     region: this.region
   }) : this._serviceUrl;
@@ -61,7 +61,7 @@ Client.prototype.serializeMetadata = function (prefix, metadata) {
     return {};
   }
 
-  var serializedMetadata = {};
+  let serializedMetadata = {};
 
   _.keys(metadata).forEach(function (key) {
     serializedMetadata[prefix + key] = metadata[key];
@@ -76,7 +76,7 @@ Client.prototype.deserializeMetadata = function (prefix, metadata) {
     return {};
   }
 
-  var deserializedMetadata = {};
+  let deserializedMetadata = {};
 
   _.keys(metadata).forEach(function (key) {
     if (key.indexOf(prefix) !== -1) {
@@ -95,3 +95,4 @@ Client.prototype.OBJECT_META_PREFIX = OBJECT_META_PREFIX;
 Client.prototype.OBJECT_REMOVE_META_PREFIX = OBJECT_REMOVE_META_PREFIX;
 Client.prototype.ACCOUNT_META_PREFIX = ACCOUNT_META_PREFIX;
 
+module.exports = Client;

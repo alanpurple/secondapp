@@ -7,7 +7,7 @@
  *
  */
 
-var async = require('async'),
+const async = require('async'),
     _ = require('lodash');
 
 /**
@@ -22,32 +22,28 @@ var async = require('async'),
  * @param {Function}          callback
  */
 exports.getContainers = function (options, callback) {
-  var self = this;
+    const self = this;
 
-  if (typeof options === 'function') {
-    callback = options;
-    options = {};
-  }
-
-  var getContainerOpts = {
-    path: '',
-    qs: _.extend({
-      format: 'json'
-    }, _.pick(options, ['limit', 'marker', 'end_marker']))
-  };
-
-  this._request(getContainerOpts, function (err, body) {
-    if (err) {
-      return callback(err);
-    }
-    else if (!body || !(body instanceof Array)) {
-      return new Error('Malformed API Response');
+    if (typeof options === 'function') {
+        callback = options;
+        options = {};
     }
 
-    return callback(null, body.map(function (container) {
-      return new self.models.Container(self, container);
-    }));
-  });
+    const getContainerOpts = {
+        path: '',
+        qs: _.extend({
+            format: 'json'
+        }, _.pick(options, ['limit', 'marker', 'end_marker']))
+    };
+
+    this._request(getContainerOpts, (err, body) => {
+        if (err)
+            return callback(err);
+        else if (!body || !(body instanceof Array))
+            return new Error('Malformed API Response');
+
+        return callback(null, body.map(container => new self.models.Container(self, container)));
+    });
 };
 
 /**
@@ -59,27 +55,26 @@ exports.getContainers = function (options, callback) {
  * @param callback
  */
 exports.getContainer = function (container, callback) {
-  var containerName = container instanceof this.models.Container ? container.name : container,
-    self = this;
+    const containerName = container instanceof this.models.Container ? container.name : container,
+        self = this;
 
-  this._request({
-    method: 'HEAD',
-    container: containerName
-  }, function (err, body, res) {
-    if (err) {
-      return callback(err);
-    }
+    this._request({
+        method: 'HEAD',
+        container: containerName
+    }, (err, body, res) => {
+        if (err)
+            return callback(err);
 
-    var details = _.extend({}, body, {
-      name: containerName,
-      count: parseInt(res.headers['x-container-object-count'], 10),
-      bytes: parseInt(res.headers['x-container-bytes-used'], 10)
+        let details = _.extend({}, body, {
+            name: containerName,
+            count: parseInt(res.headers['x-container-object-count'], 10),
+            bytes: parseInt(res.headers['x-container-bytes-used'], 10)
+        });
+
+        details.metadata = self.deserializeMetadata(self.CONTAINER_META_PREFIX, res.headers);
+
+        callback(null, new self.models.Container(self, details));
     });
-
-    details.metadata = self.deserializeMetadata(self.CONTAINER_META_PREFIX, res.headers);
-
-    callback(null, new self.models.Container(self, details));
-  });
 };
 
 /**
@@ -93,23 +88,21 @@ exports.getContainer = function (container, callback) {
  * @param callback
  */
 exports.createContainer = function (options, callback) {
-  var containerName = typeof options === 'object' ? options.name : options,
-      self = this;
+    const containerName = typeof options === 'object' ? options.name : options,
+        self = this;
 
-  var createContainerOpts = {
-    method: 'PUT',
-    container: containerName
-  };
+    let createContainerOpts = {
+        method: 'PUT',
+        container: containerName
+    };
 
-  if (options.metadata) {
-    createContainerOpts.headers = self.serializeMetadata(self.CONTAINER_META_PREFIX, options.metadata);
-  }
+    if (options.metadata)
+        createContainerOpts.headers = self.serializeMetadata(self.CONTAINER_META_PREFIX, options.metadata);
 
-  this._request(createContainerOpts, function (err) {
-    return err
-      ? callback(err)
-      : callback(null, new self.models.Container(self, { name: containerName, metadata: options.metadata }));
-  });
+    this._request(createContainerOpts, err =>
+        err ? callback(err)
+            : callback(null, new self.models.Container(self, { name: containerName, metadata: options.metadata }))
+    );
 };
 
 /**
@@ -148,31 +141,27 @@ exports.removeContainerMetadata = function (container, metadataToRemove, callbac
  *
  * @description Convenience function for updating container metadata
  */
-exports._updateContainerMetadata = function(container, metadata, callback) {
-  var self = this;
+exports._updateContainerMetadata = function (container, metadata, callback) {
+    const self = this;
 
-  if (!(container instanceof self.models.Container)) {
-    throw new Error('Must update an existing container instance');
-  }
+    if (!(container instanceof self.models.Container))
+        throw new Error('Must update an existing container instance');
 
-  var updateContainerOpts = {
-    method: 'POST',
-    container: container.name,
-    headers: metadata
-  };
+    const updateContainerOpts = {
+        method: 'POST',
+        container: container.name,
+        headers: metadata
+    };
 
-  this._request(updateContainerOpts, function (err) {
+    this._request(updateContainerOpts, err => {
 
-    // omit our newly deleted header fields, if any
-    if (!err) {
-      container.metadata = _.omit(container.metadata,
-        _.keys(self.deserializeMetadata(self.CONTAINER_REMOVE_META_PREFIX, metadata)));
-    }
+        // omit our newly deleted header fields, if any
+        if (!err)
+            container.metadata = _.omit(container.metadata,
+                _.keys(self.deserializeMetadata(self.CONTAINER_REMOVE_META_PREFIX, metadata)));
 
-    return err
-      ? callback(err)
-      : callback(null, container);
-  });
+        return err ? callback(err) : callback(null, container);
+    });
 };
 
 /**
@@ -184,42 +173,34 @@ exports._updateContainerMetadata = function(container, metadata, callback) {
  * @param callback
  */
 exports.destroyContainer = function (container, callback) {
-  var containerName = container instanceof this.models.Container ? container.name : container,
+  const containerName = container instanceof this.models.Container ? container.name : container,
       self = this;
 
   // first fetch the container, to get the count of objects
-  this.getContainer(container, function(err, container) {
-    if (err) {
-      callback(err);
-      return;
-    }
+  this.getContainer(container, (err, container)=> {
+    if (err)
+      return callback(err);
 
     // we need to call get files, but with a limit of the current count of the container
     // with a modest offset incase of any cache staleness
     self.getFiles(container, { limit: container.count + 1000 }, function (err, files) {
-      if (err) {
+      if (err)
         return callback(err);
-      }
 
       function deleteContainer(err) {
-        if (err) {
+        if (err)
           return callback(err);
-        }
 
         self._request({
           method: 'DELETE',
           container: containerName
-        }, function (err) {
+        }, err=> {
           // if the file we're deleting returns a 404 error, ignore it
-          if (err && err.statusCode === 404) {
-            callback(null, false);
-            return;
-          }
+          if (err && err.statusCode === 404)
+            return callback(null, false);
           // non-404 case, propagate it
-          else if (err) {
-            callback(err);
-            return;
-          }
+          else if (err)
+            return callback(err);
 
           callback(null, true);
         });
@@ -229,9 +210,8 @@ exports.destroyContainer = function (container, callback) {
         file.remove(next);
       }
 
-      if (files.length === 0) {
+      if (files.length === 0)
         return deleteContainer();
-      }
 
       async.forEachLimit(files, 15, destroyFile, deleteContainer);
     });

@@ -6,7 +6,7 @@
  *
  */
 
-var filed = require('filed-mimefix'),
+const filed = require('filed-mimefix'),
     mime = require('mime'),
     base = require('../../../core/storage'),
     through = require('through2'),
@@ -22,7 +22,7 @@ var filed = require('filed-mimefix'),
  * @param callback
  */
 exports.removeFile = function (container, file, callback) {
-  var containerName = container instanceof this.models.Container ? container.name : container,
+  const containerName = container instanceof this.models.Container ? container.name : container,
       fileName = file instanceof this.models.File ? file.name : file;
 
   this._request({
@@ -46,25 +46,23 @@ exports.removeFile = function (container, file, callback) {
  * @param {array}             files         the files or fileNames to delete
  * @param callback
  */
-exports.bulkDelete = function(container, files, callback) {
-  var self = this,
-      containerName = container instanceof this.models.Container ? container.name : container;
-  this._request({
-    method: 'DELETE',
-    body: files.map(function(file) {
-      return new URL(containerName, (file instanceof self.models.File ? file.name : file));
-    }).join('\r\n'),
-    headers: {
-      'Content-Type': 'text/plain'
-    },
-    qs: {
-      'bulk-delete': true
-    }
-  }, function(err, results) {
-    return err
-      ? callback(err)
-      : callback(null, results);
-  });
+exports.bulkDelete = function (container, files, callback) {
+    const self = this,
+        containerName = container instanceof this.models.Container ? container.name : container;
+    this._request({
+        method: 'DELETE',
+        body: files.map(file => new URL(containerName, (file instanceof self.models.File ? file.name : file)))
+            .join('\r\n'),
+        headers: {
+            'Content-Type': 'text/plain'
+        },
+        qs: {
+            'bulk-delete': true
+        }
+    }, (err, results) =>
+        err
+            ? callback(err)
+            : callback(null, results));
 };
 
 /**
@@ -86,74 +84,66 @@ exports.bulkDelete = function(container, files, callback) {
  * @returns {request|*}
  */
 exports.upload = function (options) {
-  var self = this;
+    const self = this;
 
-  // check for deprecated calling with a callback
-  if (typeof arguments[arguments.length - 1] === 'function') {
-    self.emit('log::warn', 'storage.upload no longer supports calling with a callback');
-  }
-
-  var container = options.container,
-      writableStream,
-      proxyStream = through(),
-      uploadOptions = {
-        method: 'PUT',
-        upload: true,
-        container: container,
-        path: options.remote,
-        headers: options.headers || {}
-      };
-
-  if (options.container instanceof this.models.Container) {
-    uploadOptions.container = options.container.name;
-  }
-
-  if (options.contentType) {
-    uploadOptions.headers['content-type'] = options.contentType;
-  }
-  else {
-    uploadOptions.headers['content-type'] = mime.getType(options.remote);
-  }
-
-  if (options.metadata) {
-    uploadOptions.headers = _.extend(uploadOptions.headers,
-      self.serializeMetadata(self.OBJECT_META_PREFIX, options.metadata));
-  }
-
-  writableStream = this._request(uploadOptions);
-
-  writableStream.on('complete', function(response) {
-    var err = self._parseError(response);
-
-    if (err) {
-      proxyStream.emit('error', err);
-      return;
+    // check for deprecated calling with a callback
+    if (typeof arguments[arguments.length - 1] === 'function') {
+        self.emit('log::warn', 'storage.upload no longer supports calling with a callback');
     }
 
-    // load the file metadata from the cloud, so we can return a proper model
-    self.getFile(uploadOptions.container, options.remote, function (err, file) {
-      if (err) {
-        proxyStream.emit('error', err);
-        return;
-      }
+    const container = options.container,
+        writableStream,
+        proxyStream = through(),
+        uploadOptions = {
+            method: 'PUT',
+            upload: true,
+            container: container,
+            path: options.remote,
+            headers: options.headers || {}
+        };
 
-      proxyStream.emit('success', file);
+    if (options.container instanceof this.models.Container)
+        uploadOptions.container = options.container.name;
+
+    if (options.contentType)
+        uploadOptions.headers['content-type'] = options.contentType;
+    else
+        uploadOptions.headers['content-type'] = mime.getType(options.remote);
+
+    if (options.metadata)
+        uploadOptions.headers = _.extend(uploadOptions.headers,
+            self.serializeMetadata(self.OBJECT_META_PREFIX, options.metadata));
+
+    writableStream = this._request(uploadOptions);
+
+    writableStream.on('complete', function (response) {
+        var err = self._parseError(response);
+
+        if (err) {
+            proxyStream.emit('error', err);
+            return;
+        }
+
+        // load the file metadata from the cloud, so we can return a proper model
+        self.getFile(uploadOptions.container, options.remote, function (err, file) {
+            if (err) {
+                proxyStream.emit('error', err);
+                return;
+            }
+
+            proxyStream.emit('success', file);
+        });
     });
-  });
 
-  writableStream.on('error', function (err) {
-    proxyStream.emit('error', err);
-  });
+    writableStream.on('error', err => proxyStream.emit('error', err));
 
-  writableStream.on('data', function (chunk) {
-    proxyStream.emit('data', chunk);
-  });
+    writableStream.on('data', chunk => proxyStream.emit('data', chunk));
 
-  // we need a proxy stream so we can always return a file model
-  // via the 'success' event
-  proxyStream.pipe(writableStream);
+    // we need a proxy stream so we can always return a file model
+    // via the 'success' event
+    proxyStream.pipe(writableStream);
 
-  return proxyStream;
+    return proxyStream;
 };
 
 /**
@@ -173,43 +163,39 @@ exports.upload = function (options) {
  * @returns {request|*}
  */
 exports.download = function (options, callback) {
-  var self = this,
-      container = options.container,
-      inputStream,
-      apiStream;
+    const self = this,
+        container = options.container,
+        inputStream,
+        apiStream;
 
-  var success = !callback ? null : function (err, body, res) {
-    return err
-      ? callback(err)
-      : callback(null, new self.models.File(self, _.extend(res.headers, {
-          container: options.container,
-          name: options.remote
-        })));
-  };
+    const success = !callback ? null : function (err, body, res) {
+        return err
+            ? callback(err)
+            : callback(null, new self.models.File(self, _.extend(res.headers, {
+                container: options.container,
+                name: options.remote
+            })));
+    };
 
-  if (container instanceof self.models.Container) {
-    container = container.name;
-  }
+    if (container instanceof self.models.Container)
+        container = container.name;
 
-  if (options.local) {
-    inputStream = filed(options.local);
-  }
-  else if (options.stream) {
-    inputStream = options.stream;
-  }
+    if (options.local)
+        inputStream = filed(options.local);
+    else if (options.stream)
+        inputStream = options.stream;
 
-  apiStream = this._request({
-    container: container,
-    path: options.remote,
-    download: true,
-    headers: options.headers
-  }, success);
+    apiStream = this._request({
+        container: container,
+        path: options.remote,
+        download: true,
+        headers: options.headers
+    }, success);
 
-  if (inputStream) {
-    apiStream.pipe(inputStream);
-  }
+    if (inputStream)
+        apiStream.pipe(inputStream);
 
-  return apiStream;
+    return apiStream;
 };
 
 /**
@@ -222,24 +208,21 @@ exports.download = function (options, callback) {
  * @param callback
  */
 exports.getFile = function (container, file, callback) {
-  var containerName = container instanceof this.models.Container ? container.name : container,
-      self = this;
+    const containerName = container instanceof this.models.Container ? container.name : container,
+        self = this;
 
-  this._request({
-    method: 'HEAD',
-    container: containerName,
-    path: file,
-    qs: {
-      format: 'json'
-    }
-  }, function (err, body, res) {
-    return err
-      ? callback(err)
-      : callback(null, new self.models.File(self, _.extend(res.headers, {
-          container: container,
-          name: file
-        })));
-  });
+    this._request({
+        method: 'HEAD',
+        container: containerName,
+        path: file,
+        qs: {
+            format: 'json'
+        }
+    }, (err, body, res) => err ?
+        callback(err) : callback(null, new self.models.File(self, _.extend(res.headers, {
+            container: container,
+            name: file
+        }))));
 };
 
 /**
@@ -255,7 +238,7 @@ exports.getFile = function (container, file, callback) {
  * @param {Function}          callback
  */
 exports.getFiles = function (container, options, callback) {
-  var self = this;
+  const self = this;
 
   if (typeof options === 'function') {
     callback = options;
@@ -266,21 +249,19 @@ exports.getFiles = function (container, options, callback) {
   }
 
   // If limit is not specified, or it is <=10k, just make a single request
-  if (!options.limit || options.limit <= 10000) {
+  if (!options.limit || options.limit <= 10000)
     return this._getFiles(container, options, callback);
-  }
 
   // Limit is specified and is >10k. Abstract the aggregation of files (cloudfiles returns max 10k at once)
-  var files = [];
+  let files = [];
 
   // Keep track of how many files are left to collect
-  var remainingLimit = options.limit;
+  let remainingLimit = options.limit;
   delete options.limit;
 
-  var getFilesCallback = function(err, someFiles) {
-    if (err) {
+  const getFilesCallback = function(err, someFiles) {
+    if (err)
       return callback(err);
-    }
 
     files = files.concat(someFiles);
     remainingLimit -= someFiles.length;
@@ -290,64 +271,55 @@ exports.getFiles = function (container, options, callback) {
       options.marker = someFiles.pop().name;
 
       // Once the remainingLimit value becomes < 10000, we must pass it
-      if (remainingLimit < 10000) {
+      if (remainingLimit < 10000)
         options.limit = remainingLimit;
-      }
 
       self._getFiles(container, options, getFilesCallback);
-    } else {
+    } else
       callback(null, files);
-    }
   };
 
   this._getFiles(container, options, getFilesCallback);
 };
 
 exports._getFiles = function (container, options, callback) {
-  var containerName = container instanceof this.models.Container ? container.name : container,
-      self = this;
+    const containerName = container instanceof this.models.Container ? container.name : container,
+        self = this;
 
-  var getFilesOpts = {
-      path: containerName,
-      qs: _.extend({
-          format: 'json'
-      }, _.pick(options, ['limit', 'marker', 'prefix', 'path', 'delimiter']))
+    let getFilesOpts = {
+        path: containerName,
+        qs: _.extend({
+            format: 'json'
+        }, _.pick(options, ['limit', 'marker', 'prefix', 'path', 'delimiter']))
     };
 
-    if (options.endMarker) {
-      getFilesOpts.qs.end_marker = options.endMarker;
-    }
+    if (options.endMarker)
+        getFilesOpts.qs.end_marker = options.endMarker;
 
-  if (options.end_marker) {
-    getFilesOpts.qs.end_marker = options.end_marker;
-  }
+    if (options.end_marker)
+        getFilesOpts.qs.end_marker = options.end_marker;
 
-  if (options.prefix) {
-    getFilesOpts.qs.prefix  = options.prefix;
-  }
+    if (options.prefix)
+        getFilesOpts.qs.prefix = options.prefix;
 
-  if (options.path) {
-    getFilesOpts.qs.path  = options.path;
-  }
+    if (options.path)
+        getFilesOpts.qs.path = options.path;
 
-  if (options.delimiter) {
-    getFilesOpts.qs.delimiter  = options.delimiter;
-  }
+    if (options.delimiter)
+        getFilesOpts.qs.delimiter = options.delimiter;
 
-  this._request(getFilesOpts, function (err, body) {
+    this._request(getFilesOpts, (err, body) => {
 
-    if (err) {
-      return callback(err);
-    }
-    else if (!body || !(body instanceof Array)) {
-      return new Error('Malformed API Response');
-    }
+        if (err)
+            return callback(err);
+        else if (!body || !(body instanceof Array))
+            return new Error('Malformed API Response');
 
-    return callback(null, body.map(function (file) {
-      file.container = container;
-      return new self.models.File(self, file);
-    }));
-  });
+        return callback(null, body.map(file => {
+            file.container = container;
+            return new self.models.File(self, file);
+        }));
+    });
 };
 
 /**
@@ -361,25 +333,20 @@ exports._getFiles = function (container, options, callback) {
  * @param callback
  */
 exports.updateFileMetadata = function (container, file, callback) {
-  var self = this,
-      containerName = container instanceof self.models.Container ? container.name : container;
+    const self = this,
+        containerName = container instanceof self.models.Container ? container.name : container;
 
-  if (!(file instanceof base.File)) {
-    throw new Error('Must update an existing file instance');
-  }
+    if (!(file instanceof base.File))
+        throw new Error('Must update an existing file instance');
 
-  var updateFileOpts = {
-    method: 'POST',
-    container: containerName,
-    path: file.name,
-    headers: self.serializeMetadata(self.OBJECT_META_PREFIX, file.metadata)
-  };
+    const updateFileOpts = {
+        method: 'POST',
+        container: containerName,
+        path: file.name,
+        headers: self.serializeMetadata(self.OBJECT_META_PREFIX, file.metadata)
+    };
 
-  this._request(updateFileOpts, function (err) {
-    return err
-      ? callback(err)
-      : callback(null, file);
-  });
+    this._request(updateFileOpts, err => err ? callback(err) : callback(null, file));
 };
 
 /**
@@ -396,27 +363,23 @@ exports.updateFileMetadata = function (container, file, callback) {
  * @param callback
  */
 exports.copy = function (options, callback) {
-  var self = this,
-    containerName = options.sourceContainer instanceof self.models.Container ? options.sourceContainer.name : options.sourceContainer,
-    destContainerName = options.destinationContainer instanceof self.models.Container ? options.destinationContainer.name : options.destinationContainer,
-    destinationFile = options.destinationFile || options.sourceFile;
+    const self = this,
+        containerName = options.sourceContainer instanceof self.models.Container ? options.sourceContainer.name : options.sourceContainer,
+        destContainerName = options.destinationContainer instanceof self.models.Container ? options.destinationContainer.name : options.destinationContainer,
+        destinationFile = options.destinationFile || options.sourceFile;
 
-  var copyOptions = {
-    method: 'COPY',
-    uri: options.sourceFile instanceof self.models.File ? options.sourceFile.fullPath : this._getUrl({
-      container: containerName,
-      path: options.sourceFile
-    }),
-    headers: _.extend(options.headers || {}, {
-      destination: new URL('/', destContainerName,
-      destinationFile instanceof self.models.File ? destinationFile.name : destinationFile)
-    })
-  };
+    const copyOptions = {
+        method: 'COPY',
+        uri: options.sourceFile instanceof self.models.File ? options.sourceFile.fullPath : this._getUrl({
+            container: containerName,
+            path: options.sourceFile
+        }),
+        headers: _.extend(options.headers || {}, {
+            destination: new URL('/', destContainerName,
+                destinationFile instanceof self.models.File ? destinationFile.name : destinationFile)
+        })
+    };
 
-  this._request(copyOptions, function (err) {
-    return err
-      ? callback(err)
-      : callback(null, true);
-  });
+    this._request(copyOptions, err => err ? callback(err) : callback(null, true));
 };
 

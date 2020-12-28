@@ -9,6 +9,6 @@ export class RoleService{
     ){}
 
     getRoleList():Observable<string[]>{
-        return this.http.get<string[]>('/user/role');
+        return this.http.get<string[]>('/user/rolelist');
     }
 }

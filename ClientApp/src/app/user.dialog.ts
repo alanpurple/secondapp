@@ -25,17 +25,17 @@ export class UserDialog implements OnInit {
 
   selectedRole:string;
 
-  ngOnInit(){
+  ngOnInit() {
     this.roleService.getRoleList().subscribe(
-      roles=>{
-        if(!roles)
+      roles => {
+        if (!roles)
           this.errorAlert.open('role list missing, ask your service provider');
-        else{
-        this.roles=roles;
-        this.selectedRole=roles[0];
+        else {
+          this.roles = roles;
+          this.selectedRole = roles[0];
         }
       },
-      err=>this.errorAlert.open(err)
+      err => this.errorAlert.open(err)
     );
   }
 

@@ -1,4 +1,4 @@
-var crypto = require('crypto');
+const crypto = require('crypto');
 
 /**
  * client.getTemporaryUrlKey
@@ -8,18 +8,17 @@ var crypto = require('crypto');
  * @param callback
  */
 exports.getTemporaryUrlKey = function (callback) {
-  var self = this;
+    const self = this;
 
-  this._request({
-    method: 'HEAD'
-  }, function (err, body, res){
-    if(err) {
-      return callback(err);
-    }
+    this._request({
+        method: 'HEAD'
+    }, (err, body, res) => {
+        if (err)
+            return callback(err);
 
-    var temporaryUrlKey = res.headers[self.ACCOUNT_META_PREFIX + 'temp-url-key'];
-    callback(null, temporaryUrlKey);
-  });
+        const temporaryUrlKey = res.headers[self.ACCOUNT_META_PREFIX + 'temp-url-key'];
+        callback(null, temporaryUrlKey);
+    });
 
 };
 
@@ -32,20 +31,17 @@ exports.getTemporaryUrlKey = function (callback) {
  * @param callback
  */
 exports.setTemporaryUrlKey = function (key, callback) {
-  if(!key){
-    return process.nextTick(function(){
-      callback(new Error('A temporary URL key must be provided'));
-    });
-  }
-
-  this._request({
-    method: 'POST',
-    headers: {
-      'x-account-meta-temp-url-key': key
+    if (!key) {
+        return process.nextTick(() =>
+            callback(new Error('A temporary URL key must be provided')));
     }
-  }, function(err){
-    callback(err);
-  });
+
+    this._request({
+        method: 'POST',
+        headers: {
+            'x-account-meta-temp-url-key': key
+        }
+    }, err => callback(err));
 };
 
 /**
@@ -60,42 +56,39 @@ exports.setTemporaryUrlKey = function (key, callback) {
  * @param {String}            key           the secret key to be used for signing the url
  * @param callback
  */
-exports.generateTempUrl = function(container, file, method, time, key, callback) {
-  var containerName = container instanceof this.models.Container ? container.name : container,
-    fileName = file instanceof this.models.File ? file.name : file,
-    time = typeof time === 'number' ? time : parseInt(time),
-    self = this,
-    split = '/v1';
+exports.generateTempUrl = function (container, file, method, time, key, callback) {
+    const containerName = container instanceof this.models.Container ? container.name : container,
+        fileName = file instanceof this.models.File ? file.name : file,
+        self = this,
+        split = '/v1';
 
-  function createUrl() {
-    // construct our hmac signature
-    var expiry = parseInt(new Date().getTime() / 1000) + time,
-      url = self._getUrl({
-        container: containerName,
-        path: fileName
-      }),
-      hmac_body = method.toUpperCase() + '\n' + expiry + '\n' + split + url.split(split)[1];
+    time = typeof time === 'number' ? time : parseInt(time);
 
-      var hash = crypto.createHmac('sha1', key).update(hmac_body).digest('hex');
+    function createUrl() {
+        // construct our hmac signature
+        const expiry = parseInt(new Date().getTime() / 1000) + time,
+            url = self._getUrl({
+                container: containerName,
+                path: fileName
+            }),
+            hmac_body = method.toUpperCase() + '\n' + expiry + '\n' + split + url.split(split)[1];
 
-      callback(null, url + '?temp_url_sig=' + hash + '&temp_url_expires=' + expiry);
-  }
+        const hash = crypto.createHmac('sha1', key).update(hmac_body).digest('hex');
 
-  // We have to be authed to make sure we have the service catalog
-  // this is required to validate the service url
+        callback(null, url + '?temp_url_sig=' + hash + '&temp_url_expires=' + expiry);
+    }
 
-  if (!this._isAuthorized()) {
-    this.auth(function(err) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    // We have to be authed to make sure we have the service catalog
+    // this is required to validate the service url
 
-      createUrl();
-    });
+    if (!this._isAuthorized()) {
+        return this.auth(err => {
+            if (err)
+                return callback(err);
 
-    return;
-  }
+            createUrl();
+        });
+    }
 
-  createUrl();
+    createUrl();
 };

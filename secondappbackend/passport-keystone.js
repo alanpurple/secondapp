@@ -70,10 +70,9 @@ function Strategy(options, verify) {
 util.inherits(Strategy, passport.Strategy);
 
 /**
- * Get value for given field from given object. Taken from passport-local,
- * copyright 2011-2013 Jared Hanson
+ * Get value for given field from given object. Taken from passport-local
  */
-var lookup = function (obj, field) {
+function lookup(obj, field) {
     var i, len, chain, prop;
     if (!obj) { return null; }
     chain = field.split(']').join('').split('[');
@@ -84,7 +83,7 @@ var lookup = function (obj, field) {
         obj = prop;
     }
     return null;
-};
+}
 
 
 /**

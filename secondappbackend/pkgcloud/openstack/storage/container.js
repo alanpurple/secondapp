@@ -6,12 +6,12 @@
  *
  */
 
-var util = require('util'),
+const util = require('util'),
     base = require('../../core/storage/container'),
     _ = require('lodash');
 
-var Container = exports.Container = function Container(client, details) {
-  base.Container.call(this, client, details);
+let Container = function Container(client, details) {
+    base.Container.call(this, client, details);
 };
 
 util.inherits(Container, base.Container);
@@ -38,5 +38,4 @@ Container.prototype.toJSON = function () {
     'bytes', 'metadata']);
 };
 
-
-
+module.exports = Container;

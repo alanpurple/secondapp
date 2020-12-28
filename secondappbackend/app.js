@@ -38,7 +38,7 @@ const sqlOptions = {
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8;`)
 );*/
 
-var app = express();
+const app = express();
 
 // uncomment after placing your favicon in /public
 app.use(favicon('favicon.ico'));
@@ -288,5 +288,5 @@ app.use(function (err, req, res, next) {
 
 app.set('port', process.env.PORT || 3000);
 
-var server = app.listen(app.get('port'), ()=>
+const server = app.listen(app.get('port'), ()=>
     debug('Express server listening on port ' + server.address().port));
