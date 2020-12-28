@@ -10,7 +10,7 @@
     "name": "Alan Anderson"
   },
   "dependencies": {
-    "@kubernetes/client-node": "^0.13.1",
+    "@kubernetes/client-node": "^0.13.2",
     "@mysql/xdevapi": "^8.0.22",
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
