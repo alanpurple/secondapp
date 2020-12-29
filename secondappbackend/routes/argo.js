@@ -1,7 +1,6 @@
 const router = require('express').Router();
 const axios = require('axios');
 const http=require('http');
-const fetch=require('node-fetch');
 
 const KsInfo = require('../ksinfo.json');
 
