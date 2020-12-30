@@ -45,9 +45,15 @@ router.get('/archived-workflows', async (req, res) => {
                 Authorization: req.user.k8s_token
             }
         });
-        const items = response.data.items;
-        if (items?.length > 0)
-            res.send(response.data);
+        let items=response.data.items;
+        if(items.length>0){
+            const userProjects=req.user.projects.map(project=>project.name);
+            items=items.filter(item=>userProjects.includes(item.metadata.namespace));
+            if(items.length>0)
+                res.send(items);
+            else
+                res.sendStatus(204);
+        }
         else
             res.sendStatus(204);
     }
@@ -179,9 +185,15 @@ router.get('/cron-workflows', async (req, res) => {
                 Authorization: req.user.k8s_token
             }
         });
-        const items = response.data.items;
-        if (items?.length > 0)
-            res.send(response.data);
+        let items=response.data.items;
+        if(items.length>0){
+            const userProjects=req.user.projects.map(project=>project.name);
+            items=items.filter(item=>userProjects.includes(item.metadata.namespace));
+            if(items.length>0)
+                res.send(items);
+            else
+                res.sendStatus(204);
+        }
         else
             res.sendStatus(204);
     }
@@ -407,9 +419,15 @@ router.get('/workflows', async (req, res) => {
                 Authorization: req.user.k8s_token
             }
         });
-        const items = response.data.items;
-        if (items?.length > 0)
-            res.send(response.data);
+        let items = response.data.items;
+        if (items?.length > 0){
+            const userProjects=req.user.projects.map(project=>project.name);
+            items=items.filter(item=>userProjects.includes(item.metadata.namespace));
+            if(items.length>0)
+                res.send(items);
+            else
+                res.sendStatus(204);
+        }
         else
             res.sendStatus(204);
     }
@@ -634,7 +652,17 @@ router.get('/workflow-templates', async (req, res) => {
                 Authorization: req.user.k8s_token
             }
         });
-        res.send(response.data);
+        let items=response.data.items;
+        if(items.length>0){
+            const userProjects=req.user.projects.map(project=>project.name);
+            items=items.filter(item=>userProjects.includes(item.metadata.namespace));
+            if(items.length>0)
+                res.send(items);
+            else
+                res.sendStatus(204);
+        }
+        else
+            res.sendStatus(204);
     }
     catch (err) {
         res.status(400).send(err);

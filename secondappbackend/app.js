@@ -145,12 +145,12 @@ passport.use(new KeystoneStrategy({
         if (projectres.data.projects?.length < 1)
             throw new Error('project property error');
         const first_project_id = projectres.data.projects[0].id;*/
-        const userResponse = await axios.get(KsIdentityURL + 'users/' + req.user.id, {
+        let response = await axios.get(KsIdentityURL + 'users/' + req.user.id, {
             headers: {
                 'x-auth-token': req.user.tokenId
             }
         });
-        const userInfo = userResponse.data.user;
+        const userInfo = response.data.user;
         if (!userInfo.is_wf || userInfo.is_cluster)
             throw new Error('account information is invalid');
         let default_project_id = '';
@@ -158,22 +158,22 @@ passport.use(new KeystoneStrategy({
             default_project_id = userInfo.default_project_id;
         }
         else {
-            const projectres = await axios.get(KsIdentityURL + 'auth/projects', {
+            response = await axios.get(KsIdentityURL + 'auth/projects', {
                 headers: {
                     'x-auth-token': req.user.tokenId
                 }
             });
-            if (projectres.data.projects?.length < 1)
+            if (response.data.projects?.length < 1)
                 throw new Error('no project id');
             else {
-                const validProjects = projectres.data.projects.filter(elem => elem.is_wf && !elem.is_cluster);
+                const validProjects = response.data.projects.filter(elem => elem.is_wf && !elem.is_cluster);
                 if (validProjects?.length < 1)
                     throw new Error('no valid project, no primary workspace');
                 else
-                    default_project_id = projectres.data.projects[0].id;
+                    default_project_id = response.data.projects[0].id;
             }
         }
-        const tokenres = await axios.post(KsIdentityURL + 'auth/tokens',
+        response = await axios.post(KsIdentityURL + 'auth/tokens',
             {
                 auth: {
                     identity: {
@@ -193,8 +193,8 @@ passport.use(new KeystoneStrategy({
                 'x-auth-token': req.user.tokenId
             }
         });
-        req.user.tokenId2 = tokenres.headers['x-subject-token'];
-        const tokenresdata = tokenres.data.token;
+        req.user.tokenId2 = response.headers['x-subject-token'];
+        const tokenresdata = response.data.token;
         req.user.roles = tokenresdata.roles.map(elem => elem.name).filter(elem => /^wf\-/.test(elem));
         // grant access to admin token to tadmin
         if (req.user.roles.includes('wf-tenant-admin'))
@@ -208,6 +208,27 @@ passport.use(new KeystoneStrategy({
         const k8users = require('./kube.config.json').users;
         const adminuser = k8users.find(elem => elem.name == 'kubernetes-admin');
         req.user.k8s_token = 'Bearer ' + adminuser.user.token;
+        response=await axios.get(KsIdentityURL+'role_assignments?user.id='+req.user.id,{
+            headers: {
+                'x-auth-token': req.user.tokenId2
+            }
+        });
+        const roles=response.data.role_assignments;
+        response = await axios.get(KsIdentityURL + 'users/' + req.user.id + '/projects', {
+            headers: {
+                'x-auth-token': req.user.tokenId2
+            }
+        });
+        const UserProjects=response.data.projects;
+        const projectData=roles.map(elem=>{
+            const name=UserProjects.find(elem2=>elem2.id==elem.scope.project.id).name;
+            return {
+                id:elem.scope.project.id,
+                name:name,
+                roleId:elem.role.id
+            }
+        });
+        req.user.projects=projectData;
         done(null, req.user);
     }
     catch (err) {
