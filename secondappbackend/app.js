@@ -50,7 +50,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 const sessionStore = new SqlStore(sqlOptions);
 
 app.use(session({
-    key: 'argo_cookie',
+    name: 'argo_cookie',
     secret: 'do not need to know',
     store: sessionStore,
     resave: false,
