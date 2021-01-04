@@ -213,7 +213,7 @@ passport.use(new KeystoneStrategy({
                 'x-auth-token': req.user.tokenId2
             }
         });
-        const roles=response.data.role_assignments;
+        const roles=response.data.role_assignments.filter(elem=>'project' in elem.scope);
         response = await axios.get(KsIdentityURL + 'users/' + req.user.id + '/projects', {
             headers: {
                 'x-auth-token': req.user.tokenId2
@@ -221,7 +221,7 @@ passport.use(new KeystoneStrategy({
         });
         const UserProjects=response.data.projects;
         const projectData=roles.map(elem=>{
-            const name=UserProjects.find(elem2=>elem2.id==elem.scope.project.id).name;
+            const name=UserProjects.find(elem2=>elem2.id==elem.scope.project?.id).name;
             return {
                 id:elem.scope.project.id,
                 name:name,
