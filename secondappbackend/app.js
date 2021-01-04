@@ -208,6 +208,8 @@ passport.use(new KeystoneStrategy({
         const k8users = require('./kube.config.json').users;
         const adminuser = k8users.find(elem => elem.name == 'kubernetes-admin');
         req.user.k8s_token = 'Bearer ' + adminuser.user.token;
+        if (req.user.roles.includes('wf-app-admin'))
+            return done(null,req.user);
         response=await axios.get(KsIdentityURL+'role_assignments?user.id='+req.user.id,{
             headers: {
                 'x-auth-token': req.user.tokenId2
@@ -221,7 +223,7 @@ passport.use(new KeystoneStrategy({
         });
         const UserProjects=response.data.projects;
         const projectData=roles.map(elem=>{
-            const name=UserProjects.find(elem2=>elem2.id==elem.scope.project?.id).name;
+            const name=UserProjects.find(elem2=>elem2.id==elem.scope.project.id).name;
             return {
                 id:elem.scope.project.id,
                 name:name,

@@ -47,8 +47,10 @@ router.get('/archived-workflows', async (req, res) => {
         });
         let items=response.data.items;
         if(items.length>0){
-            const userProjects=req.user.projects.map(project=>project.name);
-            items=items.filter(item=>userProjects.includes(item.metadata.namespace));
+            if (!req.user.roles.includes('wf-app-admin')){
+                const userProjects=req.user.projects.map(project=>project.name);
+                items=items.filter(item=>userProjects.includes(item.metadata.namespace));
+            }
             if(items.length>0)
                 res.send(items);
             else
@@ -187,8 +189,10 @@ router.get('/cron-workflows', async (req, res) => {
         });
         let items=response.data.items;
         if(items.length>0){
-            const userProjects=req.user.projects.map(project=>project.name);
-            items=items.filter(item=>userProjects.includes(item.metadata.namespace));
+            if (!req.user.roles.includes('wf-app-admin')){
+                const userProjects=req.user.projects.map(project=>project.name);
+                items=items.filter(item=>userProjects.includes(item.metadata.namespace));
+            }
             if(items.length>0)
                 res.send(items);
             else
@@ -421,8 +425,10 @@ router.get('/workflows', async (req, res) => {
         });
         let items = response.data.items;
         if (items?.length > 0){
-            const userProjects=req.user.projects.map(project=>project.name);
-            items=items.filter(item=>userProjects.includes(item.metadata.namespace));
+            if (!req.user.roles.includes('wf-app-admin')){
+                const userProjects=req.user.projects.map(project=>project.name);
+                items=items.filter(item=>userProjects.includes(item.metadata.namespace));
+            }   
             if(items.length>0)
                 res.send(items);
             else

@@ -7,6 +7,13 @@ export class UserData {
   primary_namespace_id: string;
   primary_namespace_name: string;
   default_project_roles: string[];
+  projects?:project[];
+}
+
+class project {
+  id:string;
+  name:string;
+  roleId:string;
 }
 
 export class UserData2 {
