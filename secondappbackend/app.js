@@ -102,7 +102,7 @@ async function getAdminToken() {
                 if (validProjects?.length < 1)
                     throw new Error('no valid project, no primary workspace');
                 else
-                    default_project_id = projectres.data.projects[0].id;
+                    default_project_id = validProjects[0].id;
             }
         }
         const tokenres = await axios.post(KsIdentityURL + 'auth/tokens',
@@ -170,7 +170,7 @@ passport.use(new KeystoneStrategy({
                 if (validProjects?.length < 1)
                     throw new Error('no valid project, no primary workspace');
                 else
-                    default_project_id = response.data.projects[0].id;
+                    default_project_id = validProjects[0].id;
             }
         }
         response = await axios.post(KsIdentityURL + 'auth/tokens',
