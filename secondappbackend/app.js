@@ -69,10 +69,10 @@ async function getAdminToken() {
                     methods: ['password'],
                     password: {
                         user: {
-                            name: 'admin',
-                            domain: { id: 'default' }
+                            name: KsInfo.KS_USERNAME,
+                            domain: { id: KsInfo.KS_PROJECT_DOMAIN_ID }
                         },
-                        password: 'devstack'
+                        password: KsInfo.KS_PASSWORD
                     }
                 }
             }
