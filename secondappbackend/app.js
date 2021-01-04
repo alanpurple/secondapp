@@ -234,7 +234,7 @@ passport.use(new KeystoneStrategy({
         done(null, req.user);
     }
     catch (err) {
-        console.error(err);
+        done(err);
     }
 }));
 
