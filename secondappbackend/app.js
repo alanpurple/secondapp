@@ -153,30 +153,26 @@ passport.use(new KeystoneStrategy({
         const userInfo = response.data.user;
         if (!userInfo.is_wf || userInfo.is_cluster)
             throw new Error('account information is invalid');
-        
-        response = await axios.get(KsIdentityURL + 'auth/projects', {
-            headers: {
-                'x-auth-token': req.user.tokenId
-            }
-        });
-        let validProjects = [];
-        if (response.data.projects?.length < 1)
-            throw new Error('no project id');
-        else {
-            validProjects = response.data.projects.filter(elem => elem.is_wf && !elem.is_cluster);
-            if (validProjects?.length < 1)
-                throw new Error('no valid project, no primary workspace');
-        }
         let default_project_id = '';
         if ('default_project_id' in userInfo) {
-            const candidate = userInfo.default_project_id;
-            if (validProjects.find(elem => elem.id == candidate) > -1)
-                default_project_id = candidate;
-            else
-                default_project_id = validProjects[0].id;
+            default_project_id = userInfo.default_project_id;
         }
-        else
-            default_project_id = validProjects[0].id;
+        else {
+            response = await axios.get(KsIdentityURL + 'auth/projects', {
+                headers: {
+                    'x-auth-token': req.user.tokenId
+                }
+            });
+            if (response.data.projects?.length < 1)
+                throw new Error('no project id');
+            else {
+                const validProjects = response.data.projects.filter(elem => elem.is_wf && !elem.is_cluster);
+                if (validProjects?.length < 1)
+                    throw new Error('no valid project, no primary workspace');
+                else
+                    default_project_id = validProjects[0].id;
+            }
+        }
         response = await axios.post(KsIdentityURL + 'auth/tokens',
             {
                 auth: {
