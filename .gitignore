@@ -11,6 +11,8 @@ kube.config.json
 uiapp/
 *.user
 
+out/
+
 # System Files
 .DS_Store
 Thumbs.db

@@ -8,6 +8,9 @@ const ksUserUrl = KsUrl+ 'users';
 
 router.all('*',ensureAuthenticated);
 
+/**
+ * check name whether it's available for creation or not
+ */
 router.get('/checkname/:name',async (req,res)=>{
     try{
         const response=await axios.get(ksUserUrl, {
@@ -67,26 +70,23 @@ router.get('/', async (req, res) => {
     }
 });
 
+/**
+ * send available roles list
+ */
 router.get('/rolelist',(req,res)=>res.send(
     ['wf-app-admin','wf-app-viewer','wf-app-executor','wf-tenant-admin']
 ));
 
+/**
+ * check if user is admin
+ */
 router.get('/admin', (req, res) => {
-    /* if (req.isUnauthenticated()) {
-        res.sendStatus(401);
-        return;
-    }
-    else if (!req.user.tokenId2) {
-        res.status(401).send('second token needed');
-        return;
-    }
-    else if (req.user.roles.includes('wf-app-admin'))
-        res.send('admin ok');
-    else
-        res.status(401).send('not admin'); */
     res.send('yes, admin');
 });
 
+/**
+ * send session user data {user}
+ */
 router.get('/:id', async (req, res) => {
     try {
         const response = await axios.get(ksUserUrl + '/' + req.params.id, {
@@ -195,6 +195,12 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+/**
+ * check authenticated and admin
+ * @param {Express.Response} req
+ * @param {Express.Response} res
+ * @param {Function} next
+ */
 function ensureAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {
         if (('tokenId' in req.user) && ('tokenId2' in req.user) && ('k8s_token' in req.user)) {
