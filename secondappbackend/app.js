@@ -122,7 +122,7 @@ async function getAdminToken() {
                 }
             }, {
             headers: {
-                    'x-auth-token': response1.headers['x-subject-token']
+                'x-auth-token': response1.headers['x-subject-token']
             }
         });
         return tokenres.headers['x-subject-token'];
@@ -133,9 +133,9 @@ async function getAdminToken() {
 }
 
 passport.use(new KeystoneStrategy({
-    authUrl: KsIdentityURL+'auth/tokens'
-}, async (req, done) => {
-    req.user.tokenId = req.token.id;
+    authUrl: KsIdentityURL + 'auth/tokens'
+}, async (identity, done) => {
+    let user = { tokenId: identity.token.id, id: identity.user.id };
     try {
         /*const projectres = await axios.get(KsIdentityURL + 'auth/projects', {
             headers: {
@@ -145,9 +145,9 @@ passport.use(new KeystoneStrategy({
         if (projectres.data.projects?.length < 1)
             throw new Error('project property error');
         const first_project_id = projectres.data.projects[0].id;*/
-        let response = await axios.get(KsIdentityURL + 'users/' + req.user.id, {
+        let response = await axios.get(KsIdentityURL + 'users/' + user.id, {
             headers: {
-                'x-auth-token': req.user.tokenId
+                'x-auth-token': user.tokenId
             }
         });
         const userInfo = response.data.user;
@@ -160,7 +160,7 @@ passport.use(new KeystoneStrategy({
         else {
             response = await axios.get(KsIdentityURL + 'auth/projects', {
                 headers: {
-                    'x-auth-token': req.user.tokenId
+                    'x-auth-token': user.tokenId
                 }
             });
             if (response.data.projects?.length < 1)
@@ -179,7 +179,7 @@ passport.use(new KeystoneStrategy({
                     identity: {
                         methods: ['token'],
                         token: {
-                            id: req.user.tokenId
+                            id: user.tokenId
                         }
                     },
                     scope: {
@@ -190,48 +190,48 @@ passport.use(new KeystoneStrategy({
                 }
             }, {
             headers: {
-                'x-auth-token': req.user.tokenId
+                'x-auth-token': user.tokenId
             }
         });
-        req.user.tokenId2 = response.headers['x-subject-token'];
+        user.tokenId2 = response.headers['x-subject-token'];
         const tokenresdata = response.data.token;
-        req.user.roles = tokenresdata.roles.map(elem => elem.name).filter(elem => /^wf\-/.test(elem));
+        user.roles = tokenresdata.roles.map(elem => elem.name).filter(elem => /^wf\-/.test(elem));
         // grant access to admin token to tadmin
-        if (req.user.roles.includes('wf-tenant-admin'))
+        if (user.roles.includes('wf-tenant-admin'))
             res.user.admin_token = getAdminToken();
-        req.user.default_project_id = tokenresdata.project.id;
-        req.user.default_project_name = tokenresdata.project.name;
+        user.default_project_id = tokenresdata.project.id;
+        user.default_project_name = tokenresdata.project.name;
         //const k8sadmin_session = await tempdb_session.getSession();
         //const result = await k8sadmin_session.sql(`SELECT * FROM tempdb.cluster_infos WHERE name='admin'`).execute()
         //const data = result.fetchOne();
-        //req.user.k8s_endpoint = data[3];
+        //user.k8s_endpoint = data[3];
         const k8users = require('./kube.config.json').users;
         const adminuser = k8users.find(elem => elem.name == 'kubernetes-admin');
-        req.user.k8s_token = 'Bearer ' + adminuser.user.token;
-        if (req.user.roles.includes('wf-app-admin'))
-            return done(null,req.user);
-        response=await axios.get(KsIdentityURL+'role_assignments?user.id='+req.user.id,{
+        user.k8s_token = 'Bearer ' + adminuser.user.token;
+        if (user.roles.includes('wf-app-admin'))
+            return done(null, user);
+        response = await axios.get(KsIdentityURL + 'role_assignments?user.id=' + user.id, {
             headers: {
-                'x-auth-token': req.user.tokenId2
+                'x-auth-token': user.tokenId2
             }
         });
-        const roles=response.data.role_assignments.filter(elem=>'project' in elem.scope);
-        response = await axios.get(KsIdentityURL + 'users/' + req.user.id + '/projects', {
+        const roles = response.data.role_assignments.filter(elem => 'project' in elem.scope);
+        response = await axios.get(KsIdentityURL + 'users/' + user.id + '/projects', {
             headers: {
-                'x-auth-token': req.user.tokenId2
+                'x-auth-token': user.tokenId2
             }
         });
-        const UserProjects=response.data.projects;
-        const projectData=roles.map(elem=>{
-            const name=UserProjects.find(elem2=>elem2.id==elem.scope.project.id).name;
+        const UserProjects = response.data.projects;
+        const projectData = roles.map(elem => {
+            const name = UserProjects.find(elem2 => elem2.id == elem.scope.project.id).name;
             return {
-                id:elem.scope.project.id,
-                name:name,
-                roleId:elem.role.id
+                id: elem.scope.project.id,
+                name: name,
+                roleId: elem.role.id
             }
         });
-        req.user.projects=projectData;
-        done(null, req.user);
+        user.projects = projectData;
+        done(null, user);
     }
     catch (err) {
         done(err);
@@ -243,9 +243,9 @@ app.use(passport.session());
 
 app.get(['/', '/overview/?', '/admin/?', '/workflows/?', '/workflow-templates/?',
     '/cron-workflows/?', '/archived-workflows/?', '/notfound', '/metering/?',
-    '/monitoring/?','/reports','/userinfo',
-    '/cluster-workflow-templates/?', '/login','/user-manager/?'],
-    (req, res)=> res.sendFile(path.join(rootPath, 'index.html')));
+    '/monitoring/?', '/reports', '/userinfo',
+    '/cluster-workflow-templates/?', '/login', '/user-manager/?'],
+    (req, res) => res.sendFile(path.join(rootPath, 'index.html')));
 // End of front-end routing
 ///////////////////////////
 app.use(express.static(rootPath, { index: false }));
@@ -311,5 +311,5 @@ app.use(function (err, req, res, next) {
 
 app.set('port', process.env.PORT || 3000);
 
-const server = app.listen(app.get('port'), ()=>
+const server = app.listen(app.get('port'), () =>
     debug('Express server listening on port ' + server.address().port));
