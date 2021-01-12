@@ -77,6 +77,7 @@
       <SubType>Code</SubType>
     </Content>
     <Content Include="pkgcloud\**\*" />
+    <Content Include="README.md" />
     <Content Include="routes\**\*" />
     <Content Include="argoui\.prettierrc" />
     <Content Include="argoui\.snyk" />
@@ -88,9 +89,6 @@
     <Content Include="argoui\src\models\*.ts" />
     <Content Include="argoui\tslint.json" />
     <Content Include="argoui\yarn.lock" />
-    <Content Include="testk8s.js">
-      <SubType>Code</SubType>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="argoui\" />

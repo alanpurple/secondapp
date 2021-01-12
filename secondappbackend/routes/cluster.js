@@ -71,6 +71,9 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+/**
+ * get cluster by id
+ */
 router.get('/:id', async (req, res) => {
     if (!(req.user.roles?.includes('wf-app-admin')) && !(req.user.roles?.includes('wf-tenant-admin'))) {
         res.sendStatus(401);
@@ -125,6 +128,9 @@ router.post('/', async (req, res) => {
     }
 });
 
+/**
+ * delete using id
+ */
 router.delete('/:id', async (req, res) => {
     if (!(req.user.roles?.includes('wf-app-admin')) && !(req.user.roles?.includes('wf-tenant-admin'))) {
         res.sendStatus(401);
@@ -156,7 +162,12 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-
+/**
+ * hook for check authenticated
+ * @param {Express.Request} req
+ * @param {Express.Response} res
+ * @param {Function} next
+ */
 function ensureAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {
         if (('tokenId' in req.user) && ('tokenId2' in req.user) && ('k8s_token' in req.user))

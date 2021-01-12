@@ -11,6 +11,9 @@ const endurl = require('../ksinfo.json').ARGO_API_URL;
 router.all('*', ensureAuthenticated);
 
 // this is temporary medication, not available for non-admin
+/**
+ * check available name for user creation ( admin api)
+ */
 router.get('/checkname/:name',async (req,res)=>{
     try{
         // this is temporary medication, not available for non-admin
@@ -36,6 +39,9 @@ router.get('/checkname/:name',async (req,res)=>{
     }
 });
 
+/**
+ * get archived-workflows related to user
+ */
 router.get('/archived-workflows', async (req, res) => {
     const url = Object.keys(req.query).length > 0 ? endurl + req.url : endurl + '/archived-workflows';
     try {
@@ -974,6 +980,10 @@ router.get('/overview-workflows', async (req,res)=>{
     }
 });
 
+/**
+ * generate and send workflow overview
+ * @param {string} namespace
+ */
 router.get('/overview-workflows/:namespace', async (req, res) => {
     try{
         const response = await axios.get(endurl + '/workflows/' + req.params.namespace, {            
@@ -1023,6 +1033,10 @@ function ensureAuthenticated(req, res, next) {
 }
 
 // refine the workflow-items for overview, metering
+/**
+ * refine argo workflow items with additional properties
+ * @param {ArgoWorkflowItem} item
+ */
 function refinedWfItem(item) {
     if (!('metadata' in item) || !('status' in item)) {
         console.error('invalid item data');
@@ -1073,6 +1087,10 @@ function refinedWfItem(item) {
     return wfItem;
 }
 
+/**
+ * convert seconds to ISO time string
+ * @param {number} e
+ */
 function secondsToTime(e) {
     let forTime = e;
 

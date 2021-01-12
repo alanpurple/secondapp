@@ -129,6 +129,9 @@ router.get('/:id/member', async (req, res) => {
     }
 });
 
+/**
+ * update user information, including roles for projects
+ */
 router.patch('/:id/member', async (req, res) => {
     if (!(req.user.roles?.includes('wf-app-admin')) && !(req.user.roles?.includes('wf-tenant-admin'))) {
         res.sendStatus(401);
