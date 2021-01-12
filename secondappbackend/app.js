@@ -61,6 +61,10 @@ passport.serializeUser((user, done) => done(null, user));
 
 passport.deserializeUser((obj, done) => done(null, obj));
 
+/**
+ * This is temporary and unsafe admin-token retrieval
+ * should be removed in the future.
+ */
 async function getAdminToken() {
     try {
         const response1 = await axios.post(KsIdentityURL + 'auth/tokens', {
@@ -132,6 +136,9 @@ async function getAdminToken() {
     }
 }
 
+/**
+ * Keyston authentication
+ */
 passport.use(new KeystoneStrategy({
     authUrl: KsIdentityURL+'auth/tokens'
 }, async (req, done) => {
