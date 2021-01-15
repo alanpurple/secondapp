@@ -12,6 +12,7 @@ uiapp/
 *.user
 
 out/
+obj/
 
 # System Files
 .DS_Store
