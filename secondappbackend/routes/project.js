@@ -29,6 +29,10 @@ router.get('/', async (req, res) => {
     }
 });
 
+
+/**
+ * Get project(namespace or cluster) by id, admin util
+ */
 router.get('/:id', async (req, res) => {
     if (req.isUnauthenticated()) {
         res.sendStatus(401);

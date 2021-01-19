@@ -15,6 +15,7 @@ router.get('/', async (req, res) => {
                 'x-auth-token': tokenId
             }
         });
+        // only workflow role is required
         let roles = response.data.roles.filter(elem => elem.is_wf);
         if (roles.length == 0) {
             res.send(204);

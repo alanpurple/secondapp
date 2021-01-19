@@ -315,7 +315,7 @@ router.delete('/:id', async (req, res) => {
     }
     try {
         const tokenId = req.user.roles?.includes('wf-tenant-admin') ? req.user.admin_token : req.user.tokenId2;
-        const response = await axios.get(KsUrl + 'projects/' + req.params.id, {
+        let response = await axios.get(KsUrl + 'projects/' + req.params.id, {
             headers: {
                 'x-auth-token': tokenId
             }
@@ -325,13 +325,16 @@ router.delete('/:id', async (req, res) => {
             res.status(400).send('required id is not a valid namespace id');
             return;
         }
+        // name is required for deletion in k8s
         const projectName = project.name;
-        const ksResponse = await axios.delete(KsUrl + 'projects/' + req.params.id, {
+        // delete by id from keystone
+        response = await axios.delete(KsUrl + 'projects/' + req.params.id, {
             headers: {
                 'x-auth-token': tokenId
             }
         });
-        const k8sResponse = await k8sCore.deleteNamespace(projectName);
+        // delete from k8s too, this time, by name
+        response = await k8sCore.deleteNamespace(projectName);
         res.send('namespace deleted');
     }
     catch (err) {
